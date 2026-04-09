@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { execFile, spawn } = require('child_process');
+const { execFile, execFileSync, spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -8,6 +8,11 @@ const os = require('os');
 const LIB_DIR = path.join(__dirname, '..', 'lib');
 const PREVIEW_HTML = path.join(LIB_DIR, 'preview.html');
 const SERVER_SCRIPT = path.join(LIB_DIR, 'server.js');
+
+const dim = (s) => `\x1b[2m${s}\x1b[0m`;
+const bold = (s) => `\x1b[1m${s}\x1b[0m`;
+const cyan = (s) => `\x1b[36m${s}\x1b[0m`;
+const green = (s) => `\x1b[32m${s}\x1b[0m`;
 
 function parseArgs(args) {
   let target = null;
@@ -36,29 +41,50 @@ function parseArgs(args) {
 }
 
 function printHelp() {
-  console.log(`
-  breakpoint-preview — See all breakpoints at once
+  console.log('');
+  LOGO.forEach(l => console.log(cyan(l)));
+  console.log('');
+  console.log(`  ${bold('Usage')}`);
+  console.log(`    ${cyan('breakpoint-preview')} <url>                       ${dim('Preview a dev server')}`);
+  console.log(`    ${cyan('breakpoint-preview')} <path>                      ${dim('Preview a static file')}`);
+  console.log('');
+  console.log(`  ${bold('Options')}`);
+  console.log(`    ${cyan('--breakpoints')} 320,768,1024   ${dim('Custom viewport widths')}`);
+  console.log(`    ${cyan('--app')}                        ${dim('Standalone window (Chrome/Chromium)')}`);
+  console.log(`    ${cyan('--port')} 9000                  ${dim('Custom port (default: 8787)')}`);
+  console.log(`    ${cyan('--help')}                       ${dim('Show this help')}`);
+  console.log('');
+  console.log(`  ${bold('Examples')}`);
+  console.log(`    ${dim('$')} breakpoint-preview http://localhost:5173`);
+  console.log(`    ${dim('$')} breakpoint-preview http://localhost:3000 --app`);
+  console.log(`    ${dim('$')} breakpoint-preview ./dist --breakpoints 375,768,1440`);
+  console.log('');
+  console.log(`  ${bold('Features')}`);
+  console.log(`    ${dim('Per-viewport URL bar, hide/show viewports, scroll sync,')}`);
+  console.log(`    ${dim('session persistence, HMR pass-through, zero dependencies.')}`);
+  console.log('');
+}
 
-  Usage:
-    breakpoint-preview <url>                          Preview a dev server
-    breakpoint-preview <path>                         Preview a static file
-    breakpoint-preview <url> --breakpoints 320,768    Custom breakpoints
-    breakpoint-preview <url> --app                    Open in standalone window
-    breakpoint-preview <url> --port 9000              Custom port
+const LOGO = [
+  '┌┐ ┬─┐┌─┐┌─┐┬┌─┌─┐┌─┐┬┌┐┌┌┬┐',
+  '├┴┐├┬┘├┤ ├─┤├┴┐├─┘│ │││││ │ ',
+  '└─┘┴└─└─┘┴ ┴┴ ┴┴  └─┘┴┘└┘ ┴ ',
+  '┌─┐┬─┐┌─┐┬  ┬┬┌─┐┬ ┬',
+  '├─┘├┬┘├┤ └┐┌┘│├┤ │││',
+  '┴  ┴└─└─┘ └┘ ┴└─┘└┴┘',
+];
 
-  Examples:
-    breakpoint-preview http://localhost:3000
-    breakpoint-preview http://localhost:5173 --app
-    breakpoint-preview ./index.html --breakpoints 375,768,1024,1440,1920
-
-  Features:
-    - Per-viewport URL bar (type a path, hit Enter)
-    - Hide/show viewports (click Hide, click collapsed to restore)
-    - Scroll sync toggle (settings popover, top-right dot)
-    - State persists across reloads (URLs, hidden viewports)
-    - HMR pass-through (Vite, Webpack, etc.)
-    - Zero dependencies
-  `);
+function printBanner(target, previewUrl, bps) {
+  console.log('');
+  LOGO.forEach(l => console.log(cyan(l)));
+  console.log('');
+  console.log(`  ${dim('Target')}    ${target}`);
+  const displayUrl = previewUrl.replace(/\?.*$/, '');
+  console.log(`  ${dim('Preview')}   ${cyan(displayUrl)}`);
+  console.log(`  ${dim('Viewports')} ${bps || '375, 768, 1024, 1440'}`);
+  console.log('');
+  console.log(`  ${green('Ready.')} ${dim('Press Ctrl+C to stop.')}`);
+  console.log('');
 }
 
 function isUrl(str) {
@@ -66,15 +92,30 @@ function isUrl(str) {
 }
 
 function findBrowser() {
-  const candidates = process.platform === 'darwin'
-    ? ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/Applications/Chromium.app/Contents/MacOS/Chromium']
-    : process.platform === 'win32'
-    ? ['chrome', 'msedge']
-    : ['chromium', 'google-chrome-stable', 'google-chrome', 'chromium-browser'];
+  if (process.platform === 'darwin') {
+    const apps = ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/Applications/Chromium.app/Contents/MacOS/Chromium'];
+    for (const app of apps) {
+      if (fs.existsSync(app)) return app;
+    }
+    return null;
+  }
 
+  if (process.platform === 'win32') {
+    const dirs = [process.env.PROGRAMFILES, process.env['PROGRAMFILES(X86)'], process.env.LOCALAPPDATA].filter(Boolean);
+    const paths = [
+      ...dirs.map(d => path.join(d, 'Google', 'Chrome', 'Application', 'chrome.exe')),
+      ...dirs.map(d => path.join(d, 'Microsoft', 'Edge', 'Application', 'msedge.exe')),
+    ];
+    for (const p of paths) {
+      if (fs.existsSync(p)) return p;
+    }
+    return null;
+  }
+
+  const candidates = ['chromium', 'google-chrome-stable', 'google-chrome', 'chromium-browser'];
   for (const cmd of candidates) {
     try {
-      require('child_process').execFileSync('which', [cmd], { stdio: 'ignore' });
+      execFileSync('which', [cmd], { stdio: 'ignore' });
       return cmd;
     } catch {}
   }
@@ -85,25 +126,43 @@ function openUrl(url, appMode) {
   if (appMode) {
     const browser = findBrowser();
     if (browser) {
-      spawn(browser, [`--app=${url}`], { detached: true, stdio: 'ignore' }).unref();
+      const tmpProfile = fs.mkdtempSync(path.join(os.tmpdir(), 'bp-chrome-'));
+      process.on('exit', () => { try { fs.rmSync(tmpProfile, { recursive: true }); } catch {} });
+      const chrome = spawn(browser, [
+        `--app=${url}`,
+        `--user-data-dir=${tmpProfile}`,
+        '--no-first-run',
+        '--no-default-browser-check',
+      ], { stdio: 'ignore' });
+      chrome.on('close', () => process.exit(0));
       return;
     }
-    console.log('No Chrome/Chromium found for --app mode, falling back to default browser.');
+    console.error(`\n  ${bold('Error:')} --app requires Chrome or Chromium, but neither was found.\n  Install Chrome or use without --app.\n`);
+    process.exit(1);
   }
 
-  const cmd = process.platform === 'darwin' ? 'open'
-    : process.platform === 'win32' ? 'start'
-    : 'xdg-open';
-  execFile(cmd, [url], (err) => {
-    if (err) console.error(`Could not open browser: ${err.message}`);
-  });
+  if (process.platform === 'win32') {
+    execFile('cmd', ['/c', 'start', '', url], (err) => {
+      if (err) console.error(`Could not open browser: ${err.message}`);
+    });
+  } else {
+    const cmd = process.platform === 'darwin' ? 'open' : 'xdg-open';
+    execFile(cmd, [url], (err) => {
+      if (err) console.error(`Could not open browser: ${err.message}`);
+    });
+  }
 }
 
-function buildPreviewUrl(port, targetUrl, breakpoints) {
+function buildPreviewUrl(port, breakpoints, target) {
   const params = new URLSearchParams();
-  params.set('url', targetUrl);
   if (breakpoints) params.set('breakpoints', breakpoints);
-  return `http://localhost:${port}/_preview.html?${params.toString()}`;
+  try {
+    const u = new URL(target);
+    params.set('origin', u.origin);
+    if (u.pathname !== '/') params.set('path', u.pathname);
+  } catch {}
+  const qs = params.toString();
+  return `http://localhost:${port}/_bp${qs ? '?' + qs : ''}`;
 }
 
 function startServer(serveDir, proxyUrl, startPort, onReady) {
@@ -121,34 +180,30 @@ function startServer(serveDir, proxyUrl, startPort, onReady) {
     if (!ready) {
       console.error('Server failed to start within 10 seconds.');
       server.kill();
-      try { fs.unlinkSync(previewDest); } catch {}
       process.exit(1);
     }
   }, 10000);
 
   server.stdout.on('data', (data) => {
-    const text = data.toString();
-    output += text;
-    if (!ready) {
-      const match = output.match(/SERVING_PORT:(\d+)/);
-      if (match) {
-        ready = true;
-        clearTimeout(timeout);
-        onReady(parseInt(match[1], 10));
-      }
+    if (ready) return;
+    output += data.toString();
+    const match = output.match(/SERVING_PORT:(\d+)/);
+    if (match) {
+      ready = true;
+      output = '';
+      clearTimeout(timeout);
+      onReady(parseInt(match[1], 10));
     }
   });
 
   server.stderr.on('data', (data) => process.stderr.write(data));
 
-  server.on('close', (code) => {
-    clearTimeout(timeout);
+  process.on('exit', () => {
     try { fs.unlinkSync(previewDest); } catch {}
   });
 
   function cleanup() {
     server.kill();
-    try { fs.unlinkSync(previewDest); } catch {}
     process.exit(0);
   }
 
@@ -158,7 +213,6 @@ function startServer(serveDir, proxyUrl, startPort, onReady) {
   return server;
 }
 
-// Main
 const { target, breakpoints, appMode, port } = parseArgs(process.argv.slice(2));
 
 if (!target) {
@@ -170,13 +224,9 @@ if (isUrl(target)) {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'bp-preview-'));
   process.on('exit', () => { try { fs.rmSync(tmpDir, { recursive: true }); } catch {} });
 
-  console.log(`\n  Breakpoint Preview → ${target}\n`);
-
   startServer(tmpDir, target, port, (actualPort) => {
-    const localUrl = `http://localhost:${actualPort}/`;
-    const previewUrl = buildPreviewUrl(actualPort, localUrl, breakpoints);
-    console.log(`  Preview: ${previewUrl}`);
-    console.log(`  Press Ctrl+C to stop\n`);
+    const previewUrl = buildPreviewUrl(actualPort, breakpoints, target);
+    printBanner(target, previewUrl, breakpoints);
     openUrl(previewUrl, appMode);
   });
 } else {
@@ -188,15 +238,10 @@ if (isUrl(target)) {
 
   const stat = fs.statSync(resolvedPath);
   const serveDir = stat.isDirectory() ? resolvedPath : path.dirname(resolvedPath);
-  const fileName = stat.isDirectory() ? 'index.html' : path.basename(resolvedPath);
-
-  console.log(`\n  Breakpoint Preview → ${resolvedPath}\n`);
 
   startServer(serveDir, null, port, (actualPort) => {
-    const targetUrl = `http://localhost:${actualPort}/${fileName}`;
-    const previewUrl = buildPreviewUrl(actualPort, targetUrl, breakpoints);
-    console.log(`  Preview: ${previewUrl}`);
-    console.log(`  Press Ctrl+C to stop\n`);
+    const previewUrl = buildPreviewUrl(actualPort, breakpoints, resolvedPath);
+    printBanner(resolvedPath, previewUrl, breakpoints);
     openUrl(previewUrl, appMode);
   });
 }

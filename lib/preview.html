@@ -8,8 +8,8 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      background: #0a0a0a;
+      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+      background: #050505;
       color: #e0e0e0;
       height: 100vh;
       display: flex;
@@ -17,140 +17,257 @@
       overflow: hidden;
     }
 
+    /* Bottom Bar */
     .toolbar {
-      position: fixed;
-      top: 12px;
-      right: 10px;
-      z-index: 1000;
-    }
-    .toolbar-dot {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      cursor: pointer;
       display: flex;
       align-items: center;
-      justify-content: center;
+      height: 36px;
+      padding: 0 10px;
       gap: 2px;
-      transition: background 0.15s;
+      flex-shrink: 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      order: 1;
     }
-    .toolbar-dot:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-    .toolbar-dot i {
-      display: block;
-      width: 3px;
-      height: 3px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.5);
-    }
-    .toolbar-popover {
-      display: none;
-      position: absolute;
-      top: 36px;
-      right: 0;
-      background: rgba(20, 20, 20, 0.95);
-      backdrop-filter: blur(12px);
-      border: 1px solid #2a2a2a;
-      border-radius: 10px;
-      padding: 8px;
-      flex-direction: column;
-      gap: 6px;
-      min-width: 140px;
-    }
-    .toolbar-popover.open { display: flex; }
 
-    .toolbar-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+    .toolbar-logo {
+      width: 22px;
+      height: 22px;
+      border-radius: 5px;
+      margin-right: auto;
+      opacity: 0.5;
+      transition: opacity 0.15s ease;
+    }
+    .toolbar-logo:hover {
+      opacity: 0.8;
     }
 
     .btn {
       font-size: 12px;
-      padding: 6px 12px;
-      border: 1px solid #333;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      padding: 4px 10px;
+      border: none;
       border-radius: 6px;
-      background: #1a1a1a;
-      color: #ccc;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.4);
       cursor: pointer;
       white-space: nowrap;
+      transition: all 0.15s ease;
     }
-    .btn:hover { background: #252525; border-color: #444; }
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.8);
+    }
 
+    /* Viewport Grid */
     .viewport-container {
       flex: 1;
       display: flex;
-      gap: 12px;
-      padding: 8px 12px;
+      gap: 6px;
+      padding: 6px;
       overflow-x: auto;
       overflow-y: hidden;
       align-items: stretch;
     }
+    .viewport-container::-webkit-scrollbar { height: 6px; }
+    .viewport-container::-webkit-scrollbar-track { background: transparent; }
+    .viewport-container::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 3px;
+    }
+    .viewport-container::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
 
+    /* Viewport Frame */
     .viewport-frame {
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
-      background: #141414;
-      border: 1px solid #2a2a2a;
-      border-radius: 8px;
+      background: #0a0a0a;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
       overflow: hidden;
-      transition: width 0.3s ease, opacity 0.3s ease;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
     }
 
+    /* Viewport Header */
     .viewport-label {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 8px 12px;
-      background: #1a1a1a;
-      border-bottom: 1px solid #2a2a2a;
+      padding: 0 12px;
+      height: 36px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       font-size: 12px;
+      flex-shrink: 0;
+      gap: 8px;
+    }
+
+    .viewport-label-width {
+      font-weight: 600;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      letter-spacing: 0.02em;
+      font-variant-numeric: tabular-nums;
       flex-shrink: 0;
     }
 
-    .viewport-label-width { font-weight: 600; color: #e0e0e0; }
-    .viewport-label-name { color: #666; }
+    .viewport-label-sep {
+      color: rgba(255, 255, 255, 0.15);
+      font-weight: 400;
+    }
 
-    .viewport-frame.disabled {
-      width: 48px !important;
-      opacity: 0.6;
+    .viewport-label-name {
+      color: rgba(255, 255, 255, 0.3);
+      font-weight: 500;
+      font-size: 12px;
+      letter-spacing: 0.02em;
+    }
+
+    .viewport-url-bar {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 4px;
+      padding: 2px 8px;
+      transition: all 0.15s ease;
+    }
+    .viewport-url-bar:hover {
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+    .viewport-url-bar:focus-within {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+    .viewport-url-prefix {
+      color: rgba(255, 255, 255, 0.15);
+      white-space: nowrap;
+      pointer-events: none;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 50%;
+    }
+    .viewport-url-slash {
+      color: rgba(255, 255, 255, 0.15);
+      flex-shrink: 0;
+      pointer-events: none;
+    }
+    .viewport-url-input {
+      flex: 1;
+      min-width: 60px;
+      font: inherit;
+      color: rgba(255, 255, 255, 0.35);
+      background: transparent;
+      border: none;
+      outline: none;
+      padding: 0;
+    }
+    .viewport-url-input:focus {
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    /* Hide Button */
+    .viewport-hide-btn {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border: none;
+      border-radius: 4px;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.35);
       cursor: pointer;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+    .viewport-hide-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .viewport-label-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    /* Disabled / Collapsed — full-height pill */
+    .viewport-frame.disabled {
+      width: 36px !important;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.06);
+      border-radius: 18px;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s ease, border-color 0.2s ease;
+    }
+    .viewport-frame.disabled:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(255, 255, 255, 0.12);
     }
     .viewport-frame.disabled iframe { display: none; }
     .viewport-frame.disabled .viewport-label {
       writing-mode: vertical-rl;
       text-orientation: mixed;
-      padding: 12px 6px;
+      padding: 0;
       justify-content: center;
-      gap: 8px;
+      align-items: center;
+      gap: 0;
       height: 100%;
-    }
-    .viewport-frame.disabled .viewport-label-right { display: none; }
-    .viewport-frame.disabled .viewport-url-input { display: none; }
-
-    .viewport-url-input {
-      flex: 1;
-      min-width: 0;
-      font-size: 11px;
-      font-family: monospace;
-      color: #555;
       background: transparent;
       border: none;
-      outline: none;
-      text-align: left;
     }
-    .viewport-url-input:focus { color: #ddd; }
+    .viewport-frame.disabled .viewport-label-width {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.3);
+      letter-spacing: 0.04em;
+      transition: color 0.2s ease;
+    }
+    .viewport-frame.disabled:hover .viewport-label-width {
+      color: rgba(255, 255, 255, 0.6);
+    }
+    .viewport-frame.disabled .viewport-label-sep { display: none; }
+    .viewport-frame.disabled .viewport-label-name { display: none; }
+    .viewport-frame.disabled .viewport-label-right { display: none; }
+    .viewport-frame.disabled .viewport-url-bar { display: none; }
 
+    /* Light theme collapsed */
+    body.light .viewport-frame.disabled {
+      background: rgba(0, 0, 0, 0.03);
+      border-color: rgba(0, 0, 0, 0.08);
+    }
+    body.light .viewport-frame.disabled:hover {
+      background: rgba(0, 0, 0, 0.06);
+      border-color: rgba(0, 0, 0, 0.14);
+    }
+    body.light .viewport-frame.disabled .viewport-label-width {
+      color: rgba(0, 0, 0, 0.3);
+    }
+    body.light .viewport-frame.disabled:hover .viewport-label-width {
+      color: rgba(0, 0, 0, 0.55);
+    }
+
+    /* Iframe */
     .viewport-frame iframe {
       flex: 1;
       border: none;
-      background: white;
+      background: #fff;
+      scrollbar-width: none;
+    }
+    .viewport-frame iframe::-webkit-scrollbar {
+      display: none;
     }
 
+    /* Empty State */
     .no-url {
       flex: 1;
       display: flex;
@@ -159,21 +276,61 @@
       text-align: center;
       padding: 40px;
     }
-    .no-url h2 { font-size: 20px; font-weight: 600; margin-bottom: 12px; color: #ccc; }
-    .no-url p { font-size: 14px; color: #666; line-height: 1.6; }
-    .no-url code { background: #1a1a1a; padding: 2px 8px; border-radius: 4px; font-size: 13px; color: #aaa; }
+    .no-url h2 {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: rgba(255, 255, 255, 0.4);
+    }
+    .no-url p {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.2);
+      line-height: 1.6;
+    }
+    .no-url code {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.4);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    /* Light theme */
+    body.light { background: #e5e5e5; }
+    body.light .viewport-frame { background: #fff; border-color: rgba(0,0,0,0.1); }
+    body.light .viewport-label { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.06); }
+    body.light .viewport-label-width { color: rgba(0,0,0,0.45); }
+    body.light .viewport-label-sep { color: rgba(0,0,0,0.15); }
+    body.light .viewport-label-name { color: rgba(0,0,0,0.3); }
+    body.light .viewport-url-bar { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.06); }
+    body.light .viewport-url-bar:hover { border-color: rgba(0,0,0,0.1); }
+    body.light .viewport-url-bar:focus-within { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.12); }
+    body.light .viewport-url-prefix { color: rgba(0,0,0,0.2); }
+    body.light .viewport-url-slash { color: rgba(0,0,0,0.2); }
+    body.light .viewport-url-input { color: rgba(0,0,0,0.35); }
+    body.light .viewport-url-input:focus { color: rgba(0,0,0,0.8); }
+    body.light .viewport-hide-btn { color: rgba(0,0,0,0.3); }
+    body.light .toolbar { border-color: rgba(0,0,0,0.08); }
+    body.light .btn { color: rgba(0,0,0,0.4); }
+    body.light .btn:hover { background: rgba(0,0,0,0.06); color: rgba(0,0,0,0.7); }
+
+    /* Active toggle state */
+    .btn[data-active="true"] {
+      background: rgba(100, 200, 100, 0.12);
+      color: rgba(100, 220, 100, 0.9);
+    }
+    .btn[data-active="true"]:hover {
+      background: rgba(100, 200, 100, 0.2);
+    }
   </style>
 </head>
 <body>
   <div class="toolbar">
-    <div class="toolbar-dot" onclick="document.querySelector('.toolbar-popover').classList.toggle('open')"><i></i><i></i><i></i></div>
-    <div class="toolbar-popover">
-      <div class="toolbar-actions">
-        <button class="btn" onclick="refreshAll()">Refresh All</button>
-        <button class="btn" onclick="toggleScrollSync()" id="sync-btn">Sync Scroll: Off</button>
-        <button class="btn" onclick="toggleScale()" id="scale-btn">Scale: Off</button>
-      </div>
-    </div>
+    <img class="toolbar-logo" src="/icon.png" alt="Breakpoint Preview">
+    <button class="btn" onclick="refreshAll()">Refresh</button>
+    <button class="btn" onclick="toggleScrollSync()" id="sync-btn">Sync Scroll</button>
+    <button class="btn" onclick="toggleTheme()" id="theme-btn">Theme: Dark</button>
   </div>
 
   <div class="viewport-container" id="viewports"></div>
@@ -192,12 +349,12 @@
       1280: 'Desktop', 1440: 'Desktop L', 1920: 'Full HD', 2560: 'Ultra Wide',
     };
 
-    var scaled = false;
     var scrollSyncEnabled = false;
+    var darkTheme = localStorage.getItem('bp-theme') !== 'light';
 
     function getParams() {
       var params = new URLSearchParams(window.location.search);
-      var url = params.get('url');
+      var url = params.get('url') || window.location.origin + '/';
       var bpParam = params.get('breakpoints');
       var breakpoints;
       if (bpParam) {
@@ -208,10 +365,12 @@
       } else {
         breakpoints = DEFAULT_BREAKPOINTS;
       }
-      return { url: url, breakpoints: breakpoints };
+      var initPath = params.get('path') || '/';
+      var origin = params.get('origin') || '';
+      return { url: url, breakpoints: breakpoints, initPath: initPath, origin: origin };
     }
 
-    function renderViewports(url, breakpoints) {
+    function renderViewports(url, breakpoints, origin, initPath) {
       var container = document.getElementById('viewports');
 
       if (url && !/^https?:\/\//i.test(url)) {
@@ -234,41 +393,55 @@
         label.className = 'viewport-label';
 
         var labelLeft = document.createElement('span');
-        labelLeft.innerHTML = '<span class="viewport-label-width">' + bp.width + 'px</span>';
+        labelLeft.innerHTML = '<span class="viewport-label-width">' + bp.width + 'px</span> <span class="viewport-label-sep">/</span> <span class="viewport-label-name">' + bp.name + '</span>';
 
         var labelRight = document.createElement('span');
         labelRight.className = 'viewport-label-right';
-        labelRight.style.cssText = 'display:flex;align-items:center;gap:8px';
-        labelRight.innerHTML = '<span class="viewport-label-name">' + bp.name + '</span>';
 
         var isEnabled = sessionStorage.getItem('bp-disabled-' + bp.width) !== '1';
 
         var hideBtn = document.createElement('button');
-        hideBtn.className = 'btn';
-        hideBtn.style.cssText = 'font-size:11px;padding:2px 8px;';
+        hideBtn.className = 'viewport-hide-btn';
         hideBtn.textContent = 'Hide';
         hideBtn.onclick = function(e) {
           e.stopPropagation();
           frame.classList.add('disabled');
           frame.dataset.origWidth = frame.style.width;
           sessionStorage.setItem('bp-disabled-' + bp.width, '1');
+          var next = frame.nextElementSibling;
+          while (next && next.classList.contains('disabled')) next = next.nextElementSibling;
+          if (next) scrollAfterTransition(frame, next);
         };
         labelRight.appendChild(hideBtn);
 
+        var urlBar = document.createElement('span');
+        urlBar.className = 'viewport-url-bar';
+        if (origin) {
+          var prefix = document.createElement('span');
+          prefix.className = 'viewport-url-prefix';
+          prefix.textContent = origin.replace(/^https?:\/\//, '');
+          urlBar.appendChild(prefix);
+        }
+        var slash = document.createElement('span');
+        slash.className = 'viewport-url-slash';
+        slash.textContent = '/';
+        urlBar.appendChild(slash);
         var urlInput = document.createElement('input');
         urlInput.className = 'viewport-url-input';
-        urlInput.value = '/';
+        urlInput.value = initPath.replace(/^\//, '');
         urlInput.spellcheck = false;
         urlInput.addEventListener('keydown', function(e) {
           if (e.key === 'Enter') {
-            var path = urlInput.value.startsWith('/') ? urlInput.value : '/' + urlInput.value;
-            iframe.src = url.replace(/\/$/, '') + path;
+            var val = urlInput.value.trim();
+            var p = val.startsWith('/') ? val : '/' + val;
+            iframe.src = url.replace(/\/$/, '') + p;
             urlInput.blur();
           }
         });
+        urlBar.appendChild(urlInput);
 
         label.appendChild(labelLeft);
-        label.appendChild(urlInput);
+        label.appendChild(urlBar);
         label.appendChild(labelRight);
 
         frame.addEventListener('click', function() {
@@ -276,17 +449,18 @@
           frame.classList.remove('disabled');
           frame.style.width = frame.dataset.origWidth || (bp.width + 2) + 'px';
           sessionStorage.setItem('bp-disabled-' + bp.width, '0');
+          scrollAfterTransition(frame, frame);
         });
 
         var iframe = document.createElement('iframe');
         var saved = sessionStorage.getItem('bp-iframe-' + bp.width);
-        iframe.src = saved || url;
+        iframe.src = saved || url.replace(/\/$/, '') + initPath;
         iframe.style.width = bp.width + 'px';
         iframe.setAttribute('loading', 'lazy');
         iframe.dataset.bpWidth = bp.width;
 
         iframe.addEventListener('load', function() {
-          try { urlInput.value = iframe.contentWindow.location.pathname; } catch(e) {}
+          try { urlInput.value = iframe.contentWindow.location.pathname.replace(/^\//, ''); } catch(e) {}
         });
 
         if (!isEnabled) {
@@ -297,71 +471,70 @@
         frame.appendChild(label);
         frame.appendChild(iframe);
         container.appendChild(frame);
+        cachedIframes.push(iframe);
       });
     }
 
+    function scrollAfterTransition(source, target) {
+      source.addEventListener('transitionend', function once(e) {
+        if (e.propertyName !== 'width') return;
+        source.removeEventListener('transitionend', once);
+        target.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+      });
+    }
+
+    var params = getParams();
+    var cachedIframes = [];
+
+    var lastTarget = sessionStorage.getItem('bp-target');
+    if (lastTarget !== params.url) {
+      Object.keys(sessionStorage).forEach(function(k) {
+        if (k.startsWith('bp-')) sessionStorage.removeItem(k);
+      });
+      sessionStorage.setItem('bp-target', params.url);
+    }
+
     window.addEventListener('beforeunload', function() {
-      var iframes = document.querySelectorAll('.viewport-frame iframe');
-      iframes.forEach(function(iframe) {
+      cachedIframes.forEach(function(iframe) {
         try {
-          var p = iframe.contentWindow.location.pathname;
-          var base = iframe.src.split('/').slice(0, 3).join('/');
-          sessionStorage.setItem('bp-iframe-' + iframe.dataset.bpWidth, base + p);
+          var origin = new URL(iframe.src).origin;
+          sessionStorage.setItem('bp-iframe-' + iframe.dataset.bpWidth, origin + iframe.contentWindow.location.pathname);
         } catch(e) {}
       });
     });
 
     function refreshAll() {
-      document.querySelectorAll('.viewport-frame iframe').forEach(function(f) { f.src = f.src; });
+      cachedIframes.forEach(function(f) { f.src = f.src; });
     }
 
-    function toggleScale() {
-      scaled = !scaled;
-      var btn = document.getElementById('scale-btn');
-      var frames = document.querySelectorAll('.viewport-frame');
-      var container = document.getElementById('viewports');
-      if (scaled) {
-        btn.textContent = 'Scale: On';
-        var cw = container.clientWidth;
-        var bp = getParams().breakpoints;
-        var tw = bp.reduce(function(s, b) { return s + b.width + 18; }, 0);
-        var sf = Math.min(1, cw / tw);
-        frames.forEach(function(f) { f.style.transform = 'scale(' + sf + ')'; f.style.transformOrigin = 'top left'; });
-      } else {
-        btn.textContent = 'Scale: Off';
-        frames.forEach(function(f) { f.style.transform = ''; });
-      }
+    function applyTheme() {
+      document.getElementById('theme-btn').textContent = 'Theme: ' + (darkTheme ? 'Dark' : 'Light');
+      document.body.classList.toggle('light', !darkTheme);
     }
 
-    function updateSyncBtn(id, enabled, label) {
-      var btn = document.getElementById(id);
-      btn.textContent = label + (enabled ? ': On' : ': Off');
-      btn.style.background = enabled ? '#1a3a1a' : '#1a1a1a';
-      btn.style.borderColor = enabled ? '#2a5a2a' : '#333';
-      btn.style.color = enabled ? '#6d6' : '#ccc';
+    function toggleTheme() {
+      darkTheme = !darkTheme;
+      localStorage.setItem('bp-theme', darkTheme ? 'dark' : 'light');
+      applyTheme();
     }
 
     function toggleScrollSync() {
       scrollSyncEnabled = !scrollSyncEnabled;
-      updateSyncBtn('sync-btn', scrollSyncEnabled, 'Sync Scroll');
+      var btn = document.getElementById('sync-btn');
+      btn.textContent = 'Sync Scroll' + (scrollSyncEnabled ? ': On' : ': Off');
+      btn.setAttribute('data-active', scrollSyncEnabled);
     }
 
     window.addEventListener('message', function(e) {
       if (!scrollSyncEnabled || !e.data || e.data.type !== 'bp-scroll') return;
-      document.querySelectorAll('.viewport-frame iframe').forEach(function(iframe) {
+      cachedIframes.forEach(function(iframe) {
         if (iframe.contentWindow === e.source) return;
         iframe.contentWindow.postMessage({ type: 'bp-scroll-set', ratio: e.data.ratio }, '*');
       });
     });
 
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.toolbar')) {
-        document.querySelector('.toolbar-popover').classList.remove('open');
-      }
-    });
-
-    var p = getParams();
-    renderViewports(p.url, p.breakpoints);
+    applyTheme();
+    renderViewports(params.url, params.breakpoints, params.origin, params.initPath);
   </script>
 </body>
 </html>

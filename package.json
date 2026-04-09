@@ -6,7 +6,7 @@
   "author": "Enis Budancamanak",
   "repository": {
     "type": "git",
-    "url": "https://github.com/enisbudancamanak/breakpoint-preview"
+    "url": "https://github.com/enisbu/breakpoint-preview"
   },
   "keywords": [
     "responsive",
@@ -26,7 +26,15 @@
     "bin/",
     "lib/"
   ],
+  "scripts": {
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "changeset publish"
+  },
   "engines": {
     "node": ">=16"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.30.0"
   }
 }
